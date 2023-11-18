@@ -10,7 +10,6 @@ export default function App() {
   const [uploading, setUploading] = useState(false);
   const [name, setName] = useState('');
   const [photoURL, setPhotoURL] = useState(null);
-  const [about, setAbout] = useState('');
   const [isImageSelected, setIsImageSelected] = useState(false);
 
   const navigation = useNavigation();
@@ -26,26 +25,13 @@ export default function App() {
       if (snapshot.exists) {
         setName(snapshot.data().firstName);
         setPhotoURL(snapshot.data().photoURL);
-        setAbout(snapshot.data().about);
-
-
-
       } else {
-        console.log('Такого пользователя не существует');
+        console.warn('Такого пользователя не существует');
       }
     };
 
     fetchUserData();
   }, []);
-
-
-  const setUserAbout = async () => {
-    const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
-    await userRef.update({ about: about });
-
-    alert("Спасибо что рассказали о себе")
-  }
-
 
   const handleImageUpload = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -128,23 +114,8 @@ export default function App() {
         )}
       </TouchableOpacity>
 
-      {/* <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'black' }}>
-        Здравствуйте, {name}!
-      </Text>  */}
 
-      <Text style={styles.text}>О себе:</Text>
-      <TextInput
-        editable
-        multiline
-        numberOfLines={4}
-        maxLength={40}
-        style={styles.input}
-        placeholder={`Расскажите о себе: ${about ? about : ''}`}
-        value={about}
-        onChangeText={setAbout}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={setUserAbout}>
+      <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Обновить профиль</Text>
       </TouchableOpacity>
 
