@@ -13,7 +13,6 @@ const AddCargoScreen = () => {
   const [weight, setWeight] = useState('');
   const [weightUnit, setWeightUnit] = useState('кг');
   const [volume, setVolume] = useState('');
-  const [availability, setAvailability] = useState('готов к загрузке');
   const [startDate, setStartDate] = useState('');
   const [fromWhere, setfromWhere] = useState('');
   const [toWhere, settoWhere] = useState('');
@@ -25,62 +24,84 @@ const AddCargoScreen = () => {
   const [arrivalDate, setArrivalDate] = useState('');
   const [stavka, setStavka] = useState('');
 
-  
   const addCargoToFirestore = async () => {
     try {
-
-      if (step === 1 && (!cargo)) {
+      // Проверка шага и данных на каждом шаге
+      if (step === 1 && (!cargo || !customComment)) {
         alert("Пожалуйста, заполните все поля");
         return;
       }
   
-      // Проверка на втором шаге
       if (step === 2 && (!weight || !weightUnit)) {
         alert("Пожалуйста, заполните все поля");
         return;
       }
-
-
+  
+      // Получение текущего пользователя из Firebase Authentication
       const user = firebase.auth().currentUser;
+      if (!user) {
+        alert('Пожалуйста, войдите в систему перед добавлением груза.');
+        return;
+      }
+  
+      // Получение ссылки на Firestore и создание нового документа
       const db = firebase.firestore();
       const cargoRef = db.collection('cargo').doc();
-
-      const cargoData = {
-        id: cargoRef.id,
-        cargo,
-        customComment,
-        weight,
-        weightUnit,
-        volume,
-        availability,
-        startDate,
-        arrivalDate,
-        unloading,
-        arrivalAdress,
-        toWhere,
-        fromWhere,
-        startDate,
-        stavka,
-        userId: user.uid,
-      };
-
-      await cargoRef.set(cargoData);
-
-      // Очистить поля после добавления
-      setCargo('');
-      setWeight('');
-      setWeightUnit('кг');
-      setVolume('');
-      setAvailability('готов к загрузке');
-      setStartDate('');
-      setArrivalDate('');
-
-      console.log('Груз успешно добавлен в Firestore');
-      navigation.navigate('HomeScreen');
+  
+      // Получение данных пользователя из коллекции 'users'
+      const userRef = db.collection('users').doc(user.uid);
+      const userDoc = await userRef.get();
+  
+      if (userDoc.exists) {
+        // Извлекаем номер телефона из данных пользователя
+        const phoneNumber = userDoc.data().phoneNumber;
+  
+        // Сбор данных для отправки в Firestore
+        const cargoData = {
+          id: cargoRef.id,
+          customComment,
+          weight,
+          weightUnit,
+          volume,
+          startDate,
+          arrivalDate,
+          unloading,
+          arrivalAdress,
+          toWhere,
+          fromWhere,
+          stavka,
+          cargo,
+          userId: user.uid,
+          phoneNumber, // Добавляем номер телефона
+        };
+  
+        // Отправка данных в Firestore
+        await cargoRef.set(cargoData);
+  
+        // Сброс состояния после успешной отправки
+        setCargo('');
+        setWeight('');
+        setWeightUnit('кг');
+        setfromWhere('');
+        settoWhere('');
+        setVolume('');
+        setStartDate('');
+        setArrivalDate('');
+  
+        // Вывод успешного сообщения и навигация
+        console.log('Груз успешно добавлен в Firestore');
+        navigation.navigate('HomeScreen');
+      } else {
+        console.log('Данные пользователя не найдены.');
+        // Здесь можно добавить сообщение об ошибке, если данные пользователя отсутствуют
+      }
     } catch (error) {
+      // Обработка ошибки и вывод сообщения об ошибке
       console.error('Ошибка при добавлении груза в Firestore:', error);
     }
   };
+  
+  
 
   const nextStep = () => {
     setStep(step + 1);
@@ -304,7 +325,7 @@ const AddCargoScreen = () => {
           <Text style={styles.header}>Загрузка:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Дата загрузки"
+            placeholder="ДД/ММ/ГГ"
             value={arrivalDate}
             onChangeText={setArrivalDate}
           />
@@ -322,7 +343,7 @@ const AddCargoScreen = () => {
           <Text style={styles.header}>Разгрузка:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Дата разгрузки"
+            placeholder="ДД/ММ/ГГ"
             value={unloading}
             onChangeText={setUnloading}
           />
@@ -395,7 +416,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   picker: {
-    width: 200,
+    width: 201,
   },
   button: {
     marginTop: 50,

@@ -1,41 +1,80 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { firebase } from '../../config';
+import { Linking } from 'react-native';
 
 const JobDetailsScreen = ({ route }) => {
   const { jobData } = route.params;
-  const navigation = useNavigation()
+  const navigation = useNavigation();
+  const [user, setUser] = useState(null);
+  const [jobOwner, setJobOwner] = useState(null);
 
-  const handleChat = () => {
-    navigation.navigate('ChatScreen', { otherUser: jobData.author, jobId: jobData.id });
-  }
+  useEffect(() => {
+    const currentUser = firebase.auth().currentUser;
+    if (currentUser) {
+      setUser(currentUser);
+
+      // Загрузить данные о владельце вакансии из коллекции 'cargo'
+      const cargoRef = firebase.firestore().collection('cargo').doc(jobData.userId);
+
+      cargoRef.get()
+        .then((cargoDoc) => {
+          if (cargoDoc.exists) {
+            setJobOwner(cargoDoc.data());
+          }
+        })
+        .catch((error) => {
+          console.error('Ошибка при загрузке данных о владельце вакансии: ', error);
+        });
+    }
+  }, []);
+
+  const openWhatsApp = () => {
+    if (jobData && jobData.phoneNumber) {
+      const phoneNumber = jobData.phoneNumber;
+      const message = 'Привет, я заинтересован в вашей вакансии.';
+  
+      const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+      Linking.openURL(whatsappUrl)
+        .then(() => {
+          console.log('WhatsApp запущен');
+        })
+        .catch((error) => {
+          console.error('Ошибка при открытии WhatsApp: ', error);
+          // В случае ошибки можно предложить пользователю ввести номер вручную
+        });
+    } else {
+      console.log('Номер телефона не найден.');
+      // Здесь можно добавить сообщение об ошибке, если номер телефона отсутствует
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-    {/* <Image style={styles.Image} source={require('../../assets/START_LOGOS/pac.png')} /> */}
+      <Text style={styles.jobType}>Груз: {jobData.cargo}</Text>
+      <Text style={styles.jobDescription}>Описание: {jobData.customComment}</Text>
+      <Text style={styles.jobDescription}>Вес: {jobData.weight} {jobData.weightUnit}</Text>
+      <Text style={styles.jobDescription}>Ставка: {jobData.stavka} ₽</Text>
+      <Text style={styles.jobDescription}>Место отправления: {jobData.fromWhere}</Text>
+      <Text style={styles.jobDescription}>Адрес: {jobData.arrivalAdress}</Text>
 
-      <Text style={styles.jobTitle}>{jobData.title}</Text>
-      <Text style={styles.jobAuthor}>Заказчик {jobData.author.firstName}</Text>
+      <Text style={styles.jobDescription}>Место прибытия: {jobData.toWhere}</Text>
+      <Text style={styles.jobDescription}>Адрес: {jobData.unloadingAdress}</Text>
 
-      <Text style={styles.jobDescription}>{jobData.description}</Text>
+      <Text style={styles.jobDescription}>Дата начала: {jobData.startDate}</Text>
+      <Text style={styles.jobDescription}>Дата когда надо закончить {jobData.unloading}</Text>
 
-      <Text style={styles.jobDescription}>{jobData.price} ₽</Text>
-
-      <Text style={styles.jobType}>Тип задания: {jobData.type}</Text>
-
-      {/* Другая информация о вакансии */}
-
-      <TouchableOpacity style={styles.button}>
-        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'white' }}>Взяться за работу</Text>
-      </TouchableOpacity>
-
-      {/* <TouchableOpacity style={styles.button}>
-        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'white' }}>Предложить свою цену</Text>
-      </TouchableOpacity> */}
-
-      <TouchableOpacity style={styles.button} onPress={handleChat}>
-        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'white' }}>Контакты</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          openWhatsApp();
+        }}
+      >
+        <Text style={{ fontWeight: 'bold', fontSize: 18, color: 'white' }}>
+          Контакты с заказчиком
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -49,25 +88,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  jobTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 15,
-    textAlign: 'center'
-  },
   jobType: {
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 40,
   },
-  jobAuthor: {
-    fontSize: 20,
-    color: 'gray',
-    textAlign: 'center',
-  },
   jobDescription: {
     fontSize: 18,
-    marginTop: 40,
+    marginTop: 20,
   },
   button: {
     marginTop: 20,
@@ -78,12 +106,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 50,
   },
-  Image:{
-    width: "110%",
-    height: 300
-
-  }
-
 });
 
 export default JobDetailsScreen;

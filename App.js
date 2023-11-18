@@ -19,6 +19,8 @@ import HomeScreen from "./src/Screens/HomeScreen";
 import AddJobScreen from "./src/Screens/AddJobScreen";
 import JobDetailsScreen from "./src/Screens/JobDetailsScreen";
 import ChatScreen from "./src/Screens/ChatScreen";
+import UploadedJobs from "./src/Screens/UploadedJobs";
+// import NotificationsScreen from "./src/Screens/NotificationsScreen";
 
 
 
@@ -118,7 +120,27 @@ function App() {
                 <TouchableOpacity onPress={toggleMenu}/>
               ),
             }}
-          />          
+          />
+          <Stack.Screen
+            name="UploadedJobs"
+            component={UploadedJobs}
+            options={{
+              headerTitle: () => <Header name='' />,
+              headerRight: () => (
+                <TouchableOpacity onPress={toggleMenu}/>
+              ),
+            }}
+          />     
+          {/* <Stack.Screen
+            name="NotificationsScreen"
+            component={NotificationsScreen}
+            options={{
+              headerTitle: () => <Header name='' />,
+              headerRight: () => (
+                <TouchableOpacity onPress={toggleMenu}/>
+              ),
+            }}
+          />          */}
         </Stack.Navigator>
       {menuVisible && <Menu />}
     </View>

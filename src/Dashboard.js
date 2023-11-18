@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, Image, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { firebase } from '../config';
+import { useNavigation } from '@react-navigation/native'; 
 
 
 export default function App() {
@@ -11,6 +12,12 @@ export default function App() {
   const [photoURL, setPhotoURL] = useState(null);
   const [about, setAbout] = useState('');
   const [isImageSelected, setIsImageSelected] = useState(false);
+
+  const navigation = useNavigation();
+
+  const handleMyOrders = () => {
+    navigation.navigate('UploadedJobs');
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -109,6 +116,10 @@ export default function App() {
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContainer}>
       
+      <TouchableOpacity style={styles.myOrdersButton} onPress={handleMyOrders}>
+        <Text style={styles.buttonText}>Выложенные заказы</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={handleImageUpload}>
         {photoURL ? (
           <Image source={{ uri: photoURL }} style={styles.photo} />
@@ -119,7 +130,7 @@ export default function App() {
 
       {/* <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'black' }}>
         Здравствуйте, {name}!
-      </Text> */}
+      </Text>  */}
 
       <Text style={styles.text}>О себе:</Text>
       <TextInput
@@ -183,5 +194,14 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 15
-  }
+  },
+  myOrdersButton: {
+    height: 50,
+    width: 390,
+    backgroundColor: 'black', // Цвет кнопки
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 50,
+    marginBottom: 50
+  },
 });

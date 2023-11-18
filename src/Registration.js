@@ -19,17 +19,24 @@ const Registration = () => {
       });
       alert('Мы отправили письмо вам на почту');
 
-      const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
-      await userRef.set({
-        displayName,
-        lastName,
-        email,
-        phoneNumber, // Добавляем номер телефона
-      });
-    } catch (error) {
-      alert(error.message);
+
+      let formattedPhoneNumber = phoneNumber;
+        if (!phoneNumber.startsWith('+7')) {
+      formattedPhoneNumber = '+7' + phoneNumber;
     }
-  };
+      
+    const userRef = firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+    await userRef.set({
+      displayName,
+      lastName,
+      email,
+      phoneNumber: formattedPhoneNumber, // Сохраняем отформатированный номер телефона
+    });
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={{ fontWeight: 'bold', fontSize: 23 }}>Регистрация</Text>

@@ -1,22 +1,25 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import React from 'react';
 import { FontAwesome } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'
-
+import { useNavigation } from '@react-navigation/native';
 
 const Menu = () => {
-    const navigation = useNavigation()
+  const navigation = useNavigation();
+
   return (
     <View style={styles.menuContainer}>
       <TouchableOpacity onPress={() => navigation.navigate('HomeScreen')} style={styles.menuItem}>
-        <FontAwesome name="home" size={24} color="white" />
+        <FontAwesome name="home" size={30} color="white" />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('AddJobScreen')} style={styles.menuItem}>
-        <FontAwesome name="plus" size={24} color="white" />
+        <FontAwesome name="plus" size={30} color="white" />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Dashboard')} style={styles.menuItem}>
-        <FontAwesome name="user" size={24} color="white" />
+        <FontAwesome name="user" size={30} color="white" />
       </TouchableOpacity>
+      {/* <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')} style={styles.menuItem}>
+        <FontAwesome name="bell" size={30} color="white" />
+      </TouchableOpacity> */}
       {/* Добавьте другие элементы меню */}
     </View>
   );
